@@ -14,22 +14,32 @@ from distarray.client import Context, DistArray
 
 class TestDistributedIO(unittest.TestCase):
 
-    def setUp(self):
-        self.client = Client()
-        self.dv = self.client[:]
-        if len(self.dv.targets) < 4:
+    @classmethod
+    def setUpClass(cls):
+        cls.client = Client()
+        cls.dv = cls.client[:]
+        if len(cls.dv.targets) < 4:
             errmsg = 'Must set up a cluster with at least 4 engines running.'
             raise unittest.SkipTest(errmsg)
-        self.dac = Context(self.dv)
-        self.da = self.dac.empty((100,), dist={0: 'b'})
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.client.close()
+
+    def tearDown(self):
+        self.dv.clear()
 
     def test_flat_file_read_write(self):
+        dac = Context(self.dv)
+        da = dac.empty((100,), dist={0: 'b'})
+
         output_dir = tempfile.gettempdir()
         filename = 'outfile'
         output_path = path.join(output_dir, filename)
-        self.dac.save(output_path, self.da)
-        self.db = self.dac.load(output_path)
-        self.assertTrue(isinstance(self.db, DistArray))
+        dac.save(output_path, da)
+        db = dac.load(output_path)
+        self.assertTrue(isinstance(db, DistArray))
+        self.assertEqual(da, db)
 
 
 if __name__ == '__main__':
