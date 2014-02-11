@@ -168,8 +168,6 @@ class DenseLocalArray(BaseLocalArray):
 
         https://github.com/enthought/distributed-array-protocol
 
-
-
         Parameters
         ----------
         obj : an object with a `__distarray__` method or a dict
